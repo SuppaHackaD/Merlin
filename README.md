@@ -38,11 +38,12 @@ python main.py
 ### Opção B: Interface Secundária (Bot do Discord)
 1. Crie um arquivo `.env` na raiz do projeto.
 2. Adicione o seu token: `DISCORD_TOKEN=seu_token_aqui`
-3. Desperte a interface:
+3. Inicie a interface:
 ```bash
 python bot.py
 ```
 
 ## 📜 Isenção de Responsabilidade (Disclaimer)
+
 
 Este projeto tem fins estritamente educacionais e de pesquisa em automação, engenharia de software e preservação de dados descentralizados. Os desenvolvedores não hospedam, não distribuem e não se responsabilizam pelo conteúdo trafegado pelas APIs públicas de terceiros ou redes P2P integradas a este código.
