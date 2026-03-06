@@ -24,6 +24,20 @@ class NyaaCog(BaseCog):
         url = f"{self.BASE_URL}/"
         params = {"f": "0", "c": categoria_nyaa, "q": query_otimizada}
         
+        try:
+            async with self.session.get(url, params=params) as response:
+                if response.status != 200:
+                    print(f"\n[-] As runas do Nyaa estão inacessíveis (HTTP {response.status}).")
+                    return []
+                
+                html = await response.text()
+                # ... (resto do seu código do BeautifulSoup continua igual aqui) ...
+                
+        except Exception as e:
+            print(f"\n[-] Falha crítica na comunicação com o Nyaa: {e}")
+            print("[!] O site pode estar bloqueado pelo seu provedor (ISP) ou fora do ar.")
+            return []
+
         async with self.session.get(url, params=params) as response:
             html = await response.text()
             soup = BeautifulSoup(html, 'html.parser')

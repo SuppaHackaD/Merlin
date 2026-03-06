@@ -3,6 +3,7 @@ import aiohttp
 import os
 from cogs.mangadex import MangaDexCog
 from cogs.nyaa import NyaaCog
+from cogs.compactador import CompactadorCog
 
 def compilar_regras_capitulos(texto_selecao):
     regras = []
@@ -37,8 +38,34 @@ async def main():
     print("  1. Mangás (Via MangaDex - Capítulos soltos em Imagens)")
     print("  2. Mangás (Via Nyaa.si - Volumes completos em Torrent)")
     print("  3. Animes (Via Nyaa.si - Episódios/Temporadas em Torrent)")
-    categoria = input("[?] Escolha (1/2/3): ")
+    print("  4. Ferramentas Locais (Compactar para .cbz)")
+    categoria = input("[?] Escolha (1/2/3/4): ").strip()
 
+    # --- O BLOCO LOCAL (OPÇÃO 4) FICA ISOLADO AQUI ---
+    if categoria == '4':
+        print("\n[i] Ferramentas de Arquivamento Local")
+        print("  1. Compactar Obra Inteira (Ex: Transformar todas as pastas em .cbz)")
+        print("  2. Compactar Capítulo Único (Ex: Transformar apenas uma pasta em .cbz)")
+        escolha_zip = input("[?] Escolha (1/2): ").strip()
+        
+        compactador = CompactadorCog()
+        
+        if escolha_zip == '1':
+            caminho = input("[?] Cole o caminho absoluto da OBRA (Ex: Z:\\...\\Vagabond): ").strip()
+            caminho = caminho.strip('"').strip("'") 
+            compactador.transmutar_obra(caminho)
+        elif escolha_zip == '2':
+            caminho = input("[?] Cole o caminho absoluto do CAPÍTULO (Ex: Z:\\...\\Capitulo_1): ").strip()
+            caminho = caminho.strip('"').strip("'")
+            compactador.transmutar_capitulo(caminho)
+        else:
+            print("[!] Opção inválida.")
+            
+        print("\n[V] Operação finalizada.")
+        return # Quebra a execução aqui! Ele não tenta buscar na internet.
+    # --------------------------------------------------
+
+    # Se não for a 4, o script segue o fluxo normal pedindo o alvo
     titulo_alvo = input("\n[?] O que o mago deseja conjurar hoje? ")
     
     regras = None
@@ -47,13 +74,17 @@ async def main():
         selecao_caps = input("[?] Quais capítulos deseja baixar? (Deixe em branco para TODOS): ")
         regras = compilar_regras_capitulos(selecao_caps)
 
-    connector = aiohttp.TCPConnector(limit=5, limit_per_host=2)
+    #connector = aiohttp.TCPConnector(limit=5, limit_per_host=2)
     headers_furtivos = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
     }
+    timeout = aiohttp.ClientTimeout(total=30) # 30 segundos de paciência
+    connector = aiohttp.TCPConnector(family=0) # 0 tenta IPv6 primeiro, depois IPv4
 
-    async with aiohttp.ClientSession(connector=connector, headers=headers_furtivos) as session:
-        # Direciona para o Cog e passa a pasta correta de salvamento
+    # APENAS UM ÚNICO BLOCO 'async with' PARA GOVERNAR TODOS
+    async with aiohttp.ClientSession(connector=connector, headers=headers_furtivos, timeout=timeout) as session:
+        
+        # Direciona para o Cog correto
         if categoria == '1':
             extrator = MangaDexCog(session, os.path.join(pasta_raiz, 'Mangas'))
         elif categoria == '2':
@@ -65,6 +96,7 @@ async def main():
             return
 
         resultados = await extrator.buscar(titulo_alvo)
+        
         if not resultados:
             print("[-] Nada encontrado nas runas...")
             if categoria in ['2', '3']:
