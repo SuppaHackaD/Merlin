@@ -24,7 +24,7 @@ O "motor" principal do projeto opera via Linha de Comando (CLI), interagindo com
 
 Clone o repositório e instale as dependências:
 ```bash
-git clone https://github.com/SeuUsuario/Merlin_project.git
+git clone https://github.com/SuppaHackaD/Merlin_project.git
 cd Merlin_project
 pip install -r requirements.txt
 ```
